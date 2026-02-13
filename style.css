@@ -1,0 +1,498 @@
+:root {
+    --bg-nature: #fdfcf8;
+    /* Soft Off-White */
+    --card-bg: #ffffff;
+    --primary-green: #5c8d89;
+    /* Sage Green */
+    --dark-green: #375e5b;
+    --earth-brown: #8d6e63;
+    --sand-accent: #f4e1d2;
+    --text-main: #2d3436;
+    --text-muted: #636e72;
+    --border-soft: #e0e0e0;
+    --success: #27ae60;
+    --danger: #c0392b;
+
+    --shadow-soft: 0 10px 30px rgba(92, 141, 137, 0.1);
+    --font-heading: 'Merriweather', serif;
+    --font-body: 'Nunito', sans-serif;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: var(--font-body);
+    background-color: var(--bg-nature);
+    color: var(--text-main);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    /* Clean natural background pattern or gradient */
+    background-image: linear-gradient(120deg, #fdfbfb 0%, #ebedee 100%);
+}
+
+.container {
+    width: 100%;
+    max-width: 1000px;
+    /* Constrain width for better centering */
+    padding: 20px;
+    margin: 0 auto;
+    /* Auto margin for horizontal centering */
+    transition: all 0.5s ease;
+}
+
+.hidden {
+    display: none !important;
+}
+
+.active {
+    display: block !important;
+    animation: fadeIn 0.6s ease-out;
+}
+
+#login-container.active {
+    display: flex !important;
+}
+
+/* Login - Perfectly Centered */
+#login-container {
+    height: 100vh;
+    width: 100vw;
+    /* Full viewport width */
+    max-width: none;
+    /* Override container restriction */
+    margin: 0;
+    padding: 0;
+    position: fixed;
+    /* Fixed to viewport */
+    top: 0;
+    left: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: var(--bg-nature);
+    /* Ensure background consistency */
+    z-index: 1000;
+    /* Ensure it's on top */
+}
+
+.login-card {
+    background: var(--card-bg);
+    padding: 4rem;
+    border-radius: 20px;
+    box-shadow: var(--shadow-soft);
+    text-align: center;
+    width: 100%;
+    max-width: 450px;
+    border: 1px solid var(--border-soft);
+}
+
+.brand-logo i {
+    font-size: 3.5rem;
+    color: var(--primary-green);
+    margin-bottom: 1rem;
+}
+
+.login-card h1 {
+    font-family: var(--font-heading);
+    color: var(--dark-green);
+    margin-bottom: 0.5rem;
+}
+
+.login-card p {
+    color: var(--text-muted);
+    margin-bottom: 2rem;
+}
+
+.input-wrapper input {
+    width: 100%;
+    padding: 15px;
+    border: 2px solid var(--border-soft);
+    border-radius: 12px;
+    font-size: 1.2rem;
+    text-align: center;
+    transition: 0.3s;
+    outline: none;
+    background: #fafafa;
+}
+
+.input-wrapper input:focus {
+    border-color: var(--primary-green);
+    background: #fff;
+}
+
+.btn-primary {
+    background: var(--primary-green);
+    color: white;
+    padding: 15px 40px;
+    border: none;
+    border-radius: 30px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 1.5rem;
+    transition: 0.3s;
+    width: 100%;
+}
+
+.btn-primary:hover {
+    background: var(--dark-green);
+    transform: translateY(-2px);
+}
+
+/* Dashboard Header */
+header {
+    background: var(--card-bg);
+    padding: 2rem;
+    border-radius: 20px;
+    box-shadow: var(--shadow-soft);
+    margin-bottom: 2rem;
+    text-align: center;
+    /* Center header content */
+}
+
+.header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    position: relative;
+}
+
+/* Center title absolutely if needed, or justify-between keeps it cleaner */
+.nature-text {
+    font-family: var(--font-heading);
+    color: var(--dark-green);
+    font-size: 2.2rem;
+    flex-grow: 1;
+    /* Pushes print button */
+    text-align: center;
+}
+
+/* Offset print button to not mess up centering too much */
+.print-btn-icon {
+    background: transparent;
+    border: 2px solid var(--border-soft);
+    color: var(--text-muted);
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.print-btn-icon:hover {
+    border-color: var(--primary-green);
+    color: var(--primary-green);
+}
+
+.logout-btn-icon {
+    background: transparent;
+    border: 2px solid var(--border-soft);
+    color: var(--text-muted);
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.logout-btn-icon:hover {
+    border-color: var(--danger);
+    color: var(--danger);
+}
+
+.header-sub {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+#current-date-display {
+    font-weight: 600;
+    color: var(--text-muted);
+    font-size: 1.1rem;
+}
+
+.date-wrapper input {
+    padding: 8px 16px;
+    border: 1px solid var(--border-soft);
+    border-radius: 8px;
+    font-family: var(--font-body);
+    color: var(--text-main);
+    background: #fdfdfd;
+}
+
+/* Meal Grid */
+.meals-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    justify-content: center;
+    /* Center functionality */
+}
+
+.meal-card {
+    background: var(--card-bg);
+    border-radius: 20px;
+    box-shadow: var(--shadow-soft);
+    padding: 1.5rem;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.3s;
+    border: 1px solid transparent;
+}
+
+.meal-card:hover {
+    transform: translateY(-5px);
+    border-color: var(--sand-accent);
+}
+
+.card-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    border-bottom: 2px solid #f0f0f0;
+    padding-bottom: 1rem;
+}
+
+.icon-box {
+    background: #eef5f4;
+    /* Light sage bg */
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 15px;
+}
+
+.icon-box i {
+    font-size: 1.4rem;
+    color: var(--primary-green);
+}
+
+.card-header h2 {
+    font-family: var(--font-heading);
+    color: var(--text-main);
+    font-size: 1.4rem;
+}
+
+.input-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+.input-group input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid var(--border-soft);
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+    font-family: var(--font-body);
+    transition: 0.3s;
+}
+
+.input-group input:focus {
+    border-color: var(--primary-green);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(92, 141, 137, 0.1);
+}
+
+/* Buttons */
+.action-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 1.5rem;
+}
+
+.status-btn {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid var(--border-soft);
+    background: white;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    color: var(--text-muted);
+    transition: 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+.status-btn:hover {
+    background: #f9f9f9;
+}
+
+.status-btn.ate.active {
+    background: var(--success);
+    color: white;
+    border-color: var(--success);
+}
+
+.status-btn.not-ate.active {
+    background: var(--danger);
+    color: white;
+    border-color: var(--danger);
+}
+
+.status-display {
+    text-align: center;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    background: #f9f9f9;
+    padding: 8px;
+    border-radius: 6px;
+}
+
+/* Locking Logic */
+.meal-card.locked .card-body {
+    opacity: 0.3;
+    pointer-events: none;
+    filter: grayscale(0.5);
+}
+
+.lock-overlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100%;
+    height: 100%;
+    display: none;
+    /* Hidden by default */
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+}
+
+.meal-card.locked .lock-overlay {
+    display: flex;
+}
+
+.lock-msg {
+    background: rgba(255, 255, 255, 0.95);
+    padding: 15px 25px;
+    border-radius: 30px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    color: var(--text-muted);
+    border: 1px solid var(--border-soft);
+    text-align: center;
+}
+
+.lock-msg i {
+    font-size: 1.5rem;
+    color: var(--earth-brown);
+}
+
+.lock-msg span {
+    font-weight: 700;
+    font-size: 0.9rem;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Print Styles */
+@media print {
+    body {
+        background: white;
+        display: block;
+    }
+
+    #login-container,
+    .print-btn-icon,
+    .date-wrapper,
+    header {
+        display: none !important;
+    }
+
+    /* Show simple header for print */
+    #app-container:before {
+        content: "Daily Food Tracker Log";
+        display: block;
+        font-size: 2rem;
+        font-weight: bold;
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    .meals-grid {
+        display: block;
+    }
+
+    .meal-card {
+        border: 1px solid #ccc;
+        box-shadow: none;
+        break-inside: avoid;
+        margin-bottom: 20px;
+    }
+
+    .action-row {
+        display: none;
+    }
+
+    .status-display {
+        background: none;
+        text-align: left;
+        padding-left: 0;
+        font-size: 1.2rem;
+        margin-top: 10px;
+        color: black !important;
+    }
+
+    .input-group input {
+        border: none;
+        padding-left: 0;
+        font-weight: bold;
+    }
+
+    .lock-overlay {
+        display: none !important;
+    }
+
+    .meal-card.locked .card-body {
+        opacity: 1;
+        filter: none;
+    }
+}

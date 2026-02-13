@@ -1,514 +1,234 @@
-document.addEventListener('DOMContentLoaded', () => {
-    // --- Configuration & State ---
-    const CONFIG = {
-        password: '1234567890', // Simple password
-        startDate: new Date('2026-01-20'),
-        endDate: new Date('2026-06-30'),
-        storageKey: 'dayTrackerData'
-    };
+// Firebase Configuration (Replace with your own project config)
+const firebaseConfig = {
+    apiKey: "AIzaSyD4-vVRzlALQIZ6d5ZJ4fxSMFGQFTIT4oM",
+    authDomain: "food-tracker-9d86f.firebaseapp.com",
+    databaseURL: "https://food-tracker-9d86f-default-rtdb.firebaseio.com",
+    projectId: "food-tracker-9d86f",
+    storageBucket: "food-tracker-9d86f.firebasestorage.app",
+    messagingSenderId: "289162148674",
+    appId: "1:289162148674:web:ad49c87efd7cf7a601a6db",
+    measurementId: "G-NP0T7SG57G"
+};
 
-    let state = {
-        isAuthenticated: sessionStorage.getItem('isAuthenticated') === 'true',
-        entries: JSON.parse(localStorage.getItem(CONFIG.storageKey) || '{}'),
-        currentView: 'dashboard',
-        calendarDate: new Date() // Tracks the month currently being viewed in calendar
-    };
+// Initialize Firebase
+firebase.initializeApp(firebaseConfig);
+const database = firebase.database();
 
-    // --- DOM Elements ---
-    const els = {
-        // Login
-        loginOverlay: document.getElementById('login-overlay'),
-        passwordInput: document.getElementById('password-input'),
-        loginBtn: document.getElementById('login-btn'),
-        loginError: document.getElementById('login-error'),
-        appContainer: document.getElementById('app-container'),
+// DOM Elements
+const loginContainer = document.getElementById('login-container');
+const appContainer = document.getElementById('app-container');
+const passwordInput = document.getElementById('password-input');
+const errorMsg = document.getElementById('error-msg');
+const datePicker = document.getElementById('date-picker');
+const currentDateDisplay = document.getElementById('current-date-display');
 
-        // Navigation
-        navItems: document.querySelectorAll('nav li'),
-        viewSections: document.querySelectorAll('.view-section'),
-        pageTitle: document.getElementById('page-title'),
+// Constants
+const MEALS = ['breakfast', 'lunch', 'dinner'];
+const UNLOCK_TIMES = {
+    'breakfast': { hour: 9, label: '9:00 AM' },
+    'lunch': { hour: 14, label: '2:00 PM' },
+    'dinner': { hour: 20, label: '8:00 PM' }
+};
 
-        // Dashboard
-        currentDateDisplay: document.getElementById('current-date-display'),
-        daysRemaining: document.getElementById('days-remaining'),
-        daysCompleted: document.getElementById('days-completed'),
-        totalEntries: document.getElementById('total-entries'),
-        overallProgress: document.getElementById('overall-progress'),
-        progressPercentage: document.getElementById('progress-percentage'),
-        recentEntriesList: document.getElementById('recent-entries-list'),
+// State
+let foodData = {}; // Now synced with Firebase
+let currentDate = new Date().toISOString().split('T')[0];
 
-        // Calendar
-        calendarGrid: document.getElementById('calendar-grid'),
-        currentMonthDisplay: document.getElementById('current-month-display'),
-        prevMonthBtn: document.getElementById('prev-month'),
-        nextMonthBtn: document.getElementById('next-month'),
+// Initialize
+function init() {
+    // Set date picker to today
+    datePicker.value = currentDate;
+    updateDateDisplay(currentDate);
 
-        // Modal
-        entryModal: document.getElementById('entry-modal'),
-        closeModalBtn: document.querySelector('.close-modal'),
-        modalDateTitle: document.getElementById('modal-date-title'),
-        dailyLogInput: document.getElementById('daily-log'),
-        saveEntryBtn: document.getElementById('save-entry-btn'),
-        imageInput: document.getElementById('image-input'),
-        addPhotoBtn: document.getElementById('add-photo-btn'),
-        imagePreviewContainer: document.getElementById('image-preview-container'),
-        imagePreview: document.getElementById('image-preview'),
-        removePhotoBtn: document.getElementById('remove-photo-btn'),
-        zoomPhotoBtn: document.getElementById('zoom-photo-btn'),
+    // Add Event Listeners
+    datePicker.addEventListener('change', (e) => {
+        currentDate = e.target.value;
+        updateDateDisplay(currentDate);
+        renderDay(currentDate);
+    });
 
-        // Lightbox
-        lightbox: document.getElementById('lightbox'),
-        lightboxImg: document.getElementById('lightbox-img'),
-        closeLightboxBtn: document.querySelector('.close-lightbox'),
+    // Check locking every minute to update UI in real-time
+    setInterval(checkTimeLocks, 60000);
 
-        // Logout
-        logoutBtn: document.getElementById('logout-btn')
-    };
+    // Initial Render
+    renderDay(currentDate);
+}
 
-    let selectedDateKey = null; // Stores currently selected date in YYYY-MM-DD format
-
-    // --- Holidays (India 2026 context - simplified set) ---
-    const HOLIDAYS = {
-        '2026-01-26': 'Republic Day',
-        '2026-03-04': 'Holi', // Approximate
-        '2026-03-29': 'Good Friday',
-        '2026-04-14': 'Ambedkar Jayanti',
-        '2026-05-01': 'Labor Day',
-        '2026-06-30': 'Training End'
-        // Add more as needed
-    };
-
-    // --- Initialization ---
-    init();
-
-    function init() {
-        if (state.isAuthenticated) {
-            showApp();
-        } else {
-            showLogin();
-        }
-
-        setupEventListeners();
-        updateDashboardInfo();
-        updateDashboardInfo();
+// Authentication
+function checkPassword() {
+    const code = passwordInput.value;
+    if (code === '1234') {
+        loginContainer.classList.add('hidden');
+        loginContainer.classList.remove('active');
+        appContainer.classList.remove('hidden');
+        appContainer.classList.add('active');
+        init(); // Start the app
+    } else {
+        errorMsg.classList.remove('hidden');
+        passwordInput.value = '';
     }
+}
 
-    function setupEventListeners() {
-        // Login
-        els.loginBtn.addEventListener('click', handleLogin);
-        els.passwordInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') handleLogin();
-        });
+function logout() {
+    appContainer.classList.add('hidden');
+    appContainer.classList.remove('active');
+    loginContainer.classList.remove('hidden');
+    loginContainer.classList.add('active');
+}
 
-        // Navigation
-        els.navItems.forEach(item => {
-            item.addEventListener('click', () => {
-                const view = item.dataset.view;
-                switchView(view);
-            });
-        });
+// Date Handling
+function updateDateDisplay(dateStr) {
+    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+    const dateObj = new Date(dateStr);
+    currentDateDisplay.textContent = dateObj.toLocaleDateString('en-US', options);
+}
 
-        // Calendar Nav
-        els.prevMonthBtn.addEventListener('click', () => changeMonth(-1));
-        els.nextMonthBtn.addEventListener('click', () => changeMonth(1));
+// Core Logic: Render Day
+function renderDay(dateStr) {
+    const dayRef = database.ref('foodData/' + dateStr);
 
-        // Modal
-        els.closeModalBtn.addEventListener('click', closeModal);
-        els.saveEntryBtn.addEventListener('click', saveEntry);
-        window.addEventListener('click', (e) => {
-            if (e.target === els.entryModal) closeModal();
-        });
+    // Fetch data from Firebase
+    dayRef.once('value').then((snapshot) => {
+        const dayData = snapshot.val() || {};
+        foodData[dateStr] = dayData; // Locally cache
 
-        // Dog Animation Focus Logic
-        const dog = document.querySelector('.dog');
-        if (dog) {
-            els.passwordInput.addEventListener('focus', () => {
-                dog.classList.add('eyes-closed');
-            });
-            els.passwordInput.addEventListener('blur', () => {
-                dog.classList.remove('eyes-closed');
-            });
-            els.passwordInput.addEventListener('blur', () => {
-                dog.classList.remove('eyes-closed');
-            });
-        }
+        MEALS.forEach(meal => {
+            const itemInput = document.getElementById(`${meal}-item`);
 
-        // Logout
-        if (els.logoutBtn) {
-            els.logoutBtn.addEventListener('click', handleLogout);
-        }
-
-        // Image Attachment Events
-        els.addPhotoBtn.addEventListener('click', () => els.imageInput.click());
-        els.imageInput.addEventListener('change', handleImageUpload);
-        els.removePhotoBtn.addEventListener('click', removePhoto);
-        els.zoomPhotoBtn.addEventListener('click', openLightbox);
-
-        // Lightbox Events
-        els.closeLightboxBtn.addEventListener('click', closeLightbox);
-        els.lightbox.addEventListener('click', (e) => {
-            if (e.target === els.lightbox) closeLightbox();
-        });
-    }
-
-    // --- Authentication ---
-    function handleLogout() {
-        state.isAuthenticated = false;
-        sessionStorage.removeItem('isAuthenticated');
-        showLogin();
-    }
-
-    function handleLogin() {
-        const input = els.passwordInput.value;
-        if (input === CONFIG.password) {
-            state.isAuthenticated = true;
-            sessionStorage.setItem('isAuthenticated', 'true');
-            els.loginError.textContent = '';
-            showApp();
-        } else {
-            els.loginError.textContent = 'Incorrect password. Try again.';
-            els.passwordInput.value = '';
-        }
-    }
-
-    function showLogin() {
-        els.loginOverlay.classList.remove('hidden');
-        els.appContainer.classList.add('hidden');
-    }
-
-    function showApp() {
-        els.loginOverlay.classList.add('hidden');
-        els.appContainer.classList.remove('hidden');
-        renderDashboard();
-    }
-
-    // --- Navigation & Views ---
-    function switchView(viewName) {
-        // Update Nav UI
-        els.navItems.forEach(item => {
-            if (item.dataset.view === viewName) {
-                item.classList.add('active');
+            // Load data or reset
+            if (dayData[meal]) {
+                itemInput.value = dayData[meal].item || '';
+                updateStatusUI(meal, dayData[meal].status);
             } else {
-                item.classList.remove('active');
+                itemInput.value = '';
+                resetStatusUI(meal);
             }
+
+            // Attach input listeners to save on change
+            itemInput.oninput = () => saveData(meal, 'item', itemInput.value);
         });
-
-        // Update Content
-        els.viewSections.forEach(section => {
-            section.classList.add('hidden');
-        });
-
-        if (viewName === 'dashboard') {
-            document.getElementById('dashboard-view').classList.remove('hidden');
-            els.pageTitle.textContent = 'Dashboard';
-            renderDashboard();
-        } else if (viewName === 'calendar') {
-            document.getElementById('calendar-view').classList.remove('hidden');
-            els.pageTitle.textContent = 'Calendar';
-            renderCalendar();
-        } else if (viewName === 'settings') {
-            document.getElementById('settings-view').classList.remove('hidden');
-            els.pageTitle.textContent = 'Settings';
-        }
-    }
-
-    // --- Theme Logic ---
-    function initTheme() {
-        const savedTheme = localStorage.getItem('dayTrackerTheme') || 'default';
-        applyTheme(savedTheme);
-    }
-
-    function applyTheme(themeName) {
-        // Remove existing theme
-        document.documentElement.removeAttribute('data-theme');
-
-        // Apply new theme (if not default)
-        if (themeName !== 'default') {
-            document.documentElement.setAttribute('data-theme', themeName);
-        }
-
-        // Update UI state
-        document.querySelectorAll('.theme-card').forEach(card => {
-            if (card.dataset.themeValue === themeName) {
-                card.classList.add('active-theme');
-            } else {
-                card.classList.remove('active-theme');
-            }
-        });
-
-        // Save preference
-        localStorage.setItem('dayTrackerTheme', themeName);
-    }
-
-    // Add Theme Listeners
-    document.querySelectorAll('.theme-card').forEach(card => {
-        card.addEventListener('click', () => {
-            const theme = card.dataset.themeValue;
-            applyTheme(theme);
+    }).catch((error) => {
+        console.error("Firebase fetch error: ", error);
+        // Fallback to empty if error (e.g. config not set)
+        MEALS.forEach(meal => {
+            document.getElementById(`${meal}-item`).value = '';
+            resetStatusUI(meal);
         });
     });
 
-    // Call initTheme at start
-    initTheme();
+    checkTimeLocks();
+}
 
-    // --- Dashboard Logic ---
-    function updateDashboardInfo() {
-        const today = new Date();
-        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-        els.currentDateDisplay.textContent = today.toLocaleDateString('en-US', options);
+// Locking Logic
+function checkTimeLocks() {
+    const now = new Date();
+    const todayStr = now.toISOString().split('T')[0];
+    const currentHour = now.getHours();
 
-        // Date Calculations
-        const now = new Date();
-        const start = CONFIG.startDate;
-        const end = CONFIG.endDate;
+    MEALS.forEach(meal => {
+        const card = document.getElementById(`card-${meal}`);
+        const inputs = card.querySelectorAll('input, button');
+        const lockText = document.getElementById(`lock-text-${meal}`);
 
-        // Days Remaining
-        const diffTimeRemaining = end - now;
-        const daysRemaining = Math.ceil(diffTimeRemaining / (1000 * 60 * 60 * 24));
-        els.daysRemaining.textContent = daysRemaining > 0 ? daysRemaining : 0;
+        let isLocked = true;
+        let message = `Unlocks at ${UNLOCK_TIMES[meal].label}`;
 
-        // Days Completed
-        const diffTimeCompleted = now - start;
-        const daysCompleted = Math.floor(diffTimeCompleted / (1000 * 60 * 60 * 24));
-        els.daysCompleted.textContent = daysCompleted > 0 ? daysCompleted : 0;
-
-        // Progress
-        const totalDuration = end - start;
-        const progressRaw = (now - start) / totalDuration;
-        let progressPercent = Math.round(progressRaw * 100);
-
-        // Clamp 0-100
-        if (progressPercent < 0) progressPercent = 0;
-        if (progressPercent > 100) progressPercent = 100;
-
-        els.overallProgress.style.width = `${progressPercent}%`;
-        els.progressPercentage.textContent = `${progressPercent}%`;
-
-        // Total Entries
-        const entryCount = Object.keys(state.entries).length;
-        els.totalEntries.textContent = entryCount;
-    }
-
-    function renderDashboard() {
-        updateDashboardInfo();
-        renderRecentEntries();
-    }
-
-    function renderRecentEntries() {
-        const list = els.recentEntriesList;
-        list.innerHTML = '';
-
-        const entryKeys = Object.keys(state.entries).sort().reverse();
-        const recentKeys = entryKeys.slice(0, 5); // Show last 5
-
-        if (recentKeys.length === 0) {
-            list.innerHTML = '<li class="empty-state">No entries yet. Go to Calendar to add one!</li>';
-            return;
-        }
-
-        recentKeys.forEach(dateKey => {
-            const entry = state.entries[dateKey];
-            // Support both old string format and new object format
-            const entryText = typeof entry === 'object' ? entry.text : entry;
-            const entryImage = typeof entry === 'object' ? entry.image : null;
-
-            const li = document.createElement('li');
-            li.classList.add('entry-item');
-
-            // Format date for display (YYYY-MM-DD -> Month Day)
-            const dateObj = new Date(dateKey);
-            const dateStr = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-
-            let html = `
-                <div class="entry-item-content">
-                    <div class="entry-date">${dateStr}</div>
-                    <div class="entry-preview">${entryText}</div>
-                </div>
-            `;
-
-            if (entryImage) {
-                html += `<img src="${entryImage}" class="entry-thumbnail" alt="Thumbnail">`;
-            }
-
-            li.innerHTML = html;
-            list.appendChild(li);
-        });
-    }
-
-    // --- Calendar Logic ---
-    function renderCalendar() {
-        const year = state.calendarDate.getFullYear();
-        const month = state.calendarDate.getMonth(); // 0-indexed
-
-        els.currentMonthDisplay.textContent = new Date(year, month).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
-
-        const firstDay = new Date(year, month, 1).getDay(); // 0 (Sun) - 6 (Sat)
-        const daysInMonth = new Date(year, month + 1, 0).getDate();
-
-        els.calendarGrid.innerHTML = '';
-
-        // Empty slots for previous month
-        for (let i = 0; i < firstDay; i++) {
-            const emptyDiv = document.createElement('div');
-            emptyDiv.classList.add('calendar-day', 'empty');
-            els.calendarGrid.appendChild(emptyDiv);
-        }
-
-        // Days
-        for (let day = 1; day <= daysInMonth; day++) {
-            const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-            const dayEl = document.createElement('div');
-            dayEl.classList.add('calendar-day');
-            dayEl.textContent = day;
-            dayEl.dataset.date = dateStr;
-
-            // Highlight Today
-            const todayStr = new Date().toISOString().split('T')[0];
-            if (dateStr === todayStr) {
-                dayEl.classList.add('today');
-            }
-
-            // Check if entry exists
-            if (state.entries[dateStr]) {
-                dayEl.classList.add('has-entry');
-            }
-
-            // Check Holidays
-            if (HOLIDAYS[dateStr]) {
-                dayEl.classList.add('holiday');
-                dayEl.title = HOLIDAYS[dateStr]; // Tooltip
-            }
-
-            dayEl.addEventListener('click', () => openEntryModal(dateStr));
-            els.calendarGrid.appendChild(dayEl);
-        }
-    }
-
-    function changeMonth(delta) {
-        state.calendarDate.setMonth(state.calendarDate.getMonth() + delta);
-        renderCalendar();
-    }
-
-    // --- Entry Modal Logic ---
-    function openEntryModal(dateStr) {
-        selectedDateKey = dateStr;
-        const dateObj = new Date(dateStr);
-
-        // Modal Titles
-        const formattedDate = dateObj.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
-        els.modalDateTitle.textContent = formattedDate;
-
-        // Load existing data if any
-        const entry = state.entries[dateStr];
-        if (entry) {
-            if (typeof entry === 'object') {
-                els.dailyLogInput.value = entry.text || '';
-                if (entry.image) {
-                    els.imagePreview.src = entry.image;
-                    els.imagePreviewContainer.classList.remove('hidden');
-                    els.addPhotoBtn.classList.add('hidden');
-                } else {
-                    resetImagePreview();
-                }
+        if (currentDate === todayStr) {
+            // It's today. Check time.
+            if (currentHour >= UNLOCK_TIMES[meal].hour) {
+                isLocked = false;
             } else {
-                els.dailyLogInput.value = entry;
-                resetImagePreview();
+                isLocked = true;
+                message = `Unlocks at ${UNLOCK_TIMES[meal].label}`;
             }
+        } else if (currentDate < todayStr) {
+            // Past dates
+            isLocked = true;
+            message = "Day Completed";
         } else {
-            els.dailyLogInput.value = '';
-            resetImagePreview();
+            // Future dates
+            isLocked = true;
+            const formattedDate = new Date(currentDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+            message = `Unlocks on ${formattedDate}`;
         }
 
-        els.entryModal.classList.remove('hidden');
-        els.dailyLogInput.focus();
-    }
-
-    function handleImageUpload(e) {
-        const file = e.target.files[0];
-        if (!file) return;
-
-        // Check file size (suggested < 1MB for localStorage)
-        if (file.size > 1024 * 1024) {
-            alert('Image is too large. Please select a photo smaller than 1MB to save space.');
-            els.imageInput.value = '';
-            return;
-        }
-
-        const reader = new FileReader();
-        reader.onload = (event) => {
-            els.imagePreview.src = event.target.result;
-            els.imagePreviewContainer.classList.remove('hidden');
-            els.addPhotoBtn.classList.add('hidden');
-        };
-        reader.readAsDataURL(file);
-    }
-
-    function removePhoto() {
-        resetImagePreview();
-        els.imageInput.value = '';
-    }
-
-    function resetImagePreview() {
-        els.imagePreview.src = '';
-        els.imagePreviewContainer.classList.add('hidden');
-        els.addPhotoBtn.classList.remove('hidden');
-    }
-
-    // --- Lightbox Logic ---
-    function openLightbox() {
-        const src = els.imagePreview.src;
-        if (!src) return;
-
-        els.lightboxImg.src = src;
-        els.lightbox.classList.remove('hidden');
-        document.body.style.overflow = 'hidden'; // Prevent scrolling
-    }
-
-    function closeLightbox() {
-        els.lightbox.classList.add('hidden');
-        els.lightboxImg.src = '';
-        document.body.style.overflow = ''; // Restore scrolling
-    }
-
-    function closeModal() {
-        els.entryModal.classList.add('hidden');
-        selectedDateKey = null;
-    }
-
-    function saveEntry() {
-        if (!selectedDateKey) return;
-
-        const text = els.dailyLogInput.value.trim();
-        const image = els.imagePreviewContainer.classList.contains('hidden') ? null : els.imagePreview.src;
-
-        if (text || image) {
-            state.entries[selectedDateKey] = {
-                text: text,
-                image: image
-            };
+        // Apply Lock State
+        if (isLocked) {
+            card.classList.add('locked');
+            inputs.forEach(el => el.disabled = true);
+            lockText.textContent = message;
         } else {
-            // If empty, delete the entry
-            delete state.entries[selectedDateKey];
+            card.classList.remove('locked');
+            inputs.forEach(el => el.disabled = false);
         }
+    });
+}
 
-        // Persist
-        try {
-            localStorage.setItem(CONFIG.storageKey, JSON.stringify(state.entries));
-        } catch (e) {
-            alert('Storage limit reached! Please remove some photos to save new logs.');
-            console.error('Storage full', e);
-        }
+// Status Updates
+function setStatus(meal, status) {
+    saveData(meal, 'status', status);
+    updateStatusUI(meal, status);
+}
 
-        closeModal();
+function updateStatusUI(meal, status) {
+    const statusText = document.getElementById(`text-status-${meal}`);
+    const ateBtn = document.querySelector(`#card-${meal} .ate`);
+    const notAteBtn = document.querySelector(`#card-${meal} .not-ate`);
 
-        // Refresh views to show new data
-        if (!document.getElementById('dashboard-view').classList.contains('hidden')) {
-            renderDashboard();
-        } else {
-            renderCalendar(); // To update dots
-        }
+    // Reset classes
+    ateBtn.classList.remove('active');
+    notAteBtn.classList.remove('active');
+
+    if (status === 'ate') {
+        ateBtn.classList.add('active');
+        statusText.textContent = "Ate";
+        statusText.style.color = "var(--success)";
+    } else if (status === 'not-ate') {
+        notAteBtn.classList.add('active');
+        statusText.textContent = "Skipped";
+        statusText.style.color = "var(--danger)";
+    } else {
+        statusText.textContent = "Pending";
+        statusText.style.color = "var(--text-muted)";
     }
+}
 
-    // --- 3D Tilt Effect ---
+function resetStatusUI(meal) {
+    const statusText = document.getElementById(`text-status-${meal}`);
+    const ateBtn = document.querySelector(`#card-${meal} .ate`);
+    const notAteBtn = document.querySelector(`#card-${meal} .not-ate`);
 
+    ateBtn.classList.remove('active');
+    notAteBtn.classList.remove('active');
+    statusText.textContent = "Pending";
+    statusText.style.color = "var(--text-muted)";
+}
+
+// Data Persistence: Save to Firebase
+function saveData(meal, key, value) {
+    // Update local state first
+    if (!foodData[currentDate]) foodData[currentDate] = {};
+    if (!foodData[currentDate][meal]) foodData[currentDate][meal] = {};
+    foodData[currentDate][meal][key] = value;
+
+    // Push to Firebase
+    const mealRef = database.ref('foodData/' + currentDate + '/' + meal);
+    mealRef.update({
+        [key]: value,
+        timestamp: firebase.database.ServerValue.TIMESTAMP
+    }).catch((error) => {
+        console.error("Firebase save error: ", error);
+    });
+}
+
+// Print Handler
+function printDay() {
+    window.print();
+}
+
+// Allow Enter key for password
+passwordInput.addEventListener('keypress', function (e) {
+    if (e.key === 'Enter') {
+        checkPassword();
+    }
 });
