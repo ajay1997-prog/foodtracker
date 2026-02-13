@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Food Tracker</title>
+    <link rel="stylesheet" href="style.css">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Merriweather:wght@300;700&family=Nunito:wght@300;400;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+<body>
+
+    <!-- Login Section -->
+    <div id="login-container" class="container active">
+        <div class="login-card">
+            <div class="brand-logo">
+                <i class="fas fa-leaf"></i>
+            </div>
+            <h1>Welcome Back</h1>
+            <p>Please scale your nutrition.</p>
+            <div class="input-wrapper">
+                <input type="password" id="password-input" placeholder="Passcode" maxlength="4">
+            </div>
+            <button class="btn-primary" onclick="checkPassword()">Enter Tracker</button>
+            <p id="error-msg" class="hidden"><i class="fas fa-exclamation-circle"></i> Incorrect Code</p>
+        </div>
+    </div>
+
+    <!-- Main Dashboard -->
+    <div id="app-container" class="container hidden">
+        <header>
+            <div class="header-top">
+                <button class="logout-btn-icon" onclick="logout()" title="Logout">
+                    <i class="fas fa-sign-out-alt"></i>
+                </button>
+                <h1 class="nature-text">Nourish<span class="highlight">Daily</span></h1>
+                <button class="print-btn-icon" onclick="printDay()" title="Print Report">
+                    <i class="fas fa-print"></i>
+                </button>
+            </div>
+            <div class="header-sub">
+                <p id="current-date-display">February 10, 2026</p>
+                <div class="date-wrapper">
+                    <input type="date" id="date-picker">
+                </div>
+            </div>
+        </header>
+
+        <main class="meals-grid">
+            <!-- Breakfast Card -->
+            <div class="meal-card" id="card-breakfast">
+                <div class="card-content">
+                    <div class="card-header">
+                        <div class="icon-box"><i class="fas fa-mug-hot"></i></div>
+                        <h2>Breakfast</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="input-group">
+                            <label>Menu Item</label>
+                            <input type="text" id="breakfast-item" placeholder="e.g., Oatmeal & Fruit">
+                        </div>
+                        <div class="action-row">
+                            <button class="status-btn ate" onclick="setStatus('breakfast', 'ate')">
+                                <i class="fas fa-check"></i> Ate
+                            </button>
+                            <button class="status-btn not-ate" onclick="setStatus('breakfast', 'not-ate')">
+                                <i class="fas fa-times"></i> Skipped
+                            </button>
+                        </div>
+                        <div class="status-display">
+                            <span id="text-status-breakfast">Pending</span>
+                        </div>
+                    </div>
+
+                    <!-- Locked Overlay -->
+                    <div class="lock-overlay">
+                        <div class="lock-msg">
+                            <i class="fas fa-lock"></i>
+                            <span id="lock-text-breakfast">Unlocks at 9:00 AM</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Lunch Card -->
+            <div class="meal-card" id="card-lunch">
+                <div class="card-content">
+                    <div class="card-header">
+                        <div class="icon-box"><i class="fas fa-utensils"></i></div>
+                        <h2>Lunch</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="input-group">
+                            <label>Menu Item</label>
+                            <input type="text" id="lunch-item" placeholder="e.g., Grilled Salad">
+                        </div>
+                        <div class="action-row">
+                            <button class="status-btn ate" onclick="setStatus('lunch', 'ate')">
+                                <i class="fas fa-check"></i> Ate
+                            </button>
+                            <button class="status-btn not-ate" onclick="setStatus('lunch', 'not-ate')">
+                                <i class="fas fa-times"></i> Skipped
+                            </button>
+                        </div>
+                        <div class="status-display">
+                            <span id="text-status-lunch">Pending</span>
+                        </div>
+                    </div>
+                    <div class="lock-overlay">
+                        <div class="lock-msg">
+                            <i class="fas fa-lock"></i>
+                            <span id="lock-text-lunch">Unlocks at 2:00 PM</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dinner Card -->
+            <div class="meal-card" id="card-dinner">
+                <div class="card-content">
+                    <div class="card-header">
+                        <div class="icon-box"><i class="fas fa-moon"></i></div>
+                        <h2>Dinner</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="input-group">
+                            <label>Menu Item</label>
+                            <input type="text" id="dinner-item" placeholder="e.g., Soup & Bread">
+                        </div>
+                        <div class="action-row">
+                            <button class="status-btn ate" onclick="setStatus('dinner', 'ate')">
+                                <i class="fas fa-check"></i> Ate
+                            </button>
+                            <button class="status-btn not-ate" onclick="setStatus('dinner', 'not-ate')">
+                                <i class="fas fa-times"></i> Skipped
+                            </button>
+                        </div>
+                        <div class="status-display">
+                            <span id="text-status-dinner">Pending</span>
+                        </div>
+                    </div>
+                    <div class="lock-overlay">
+                        <div class="lock-msg">
+                            <i class="fas fa-lock"></i>
+                            <span id="lock-text-dinner">Unlocks at 8:00 PM</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
