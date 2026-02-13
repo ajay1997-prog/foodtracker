@@ -4,161 +4,211 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Daily Food Tracker</title>
- 
-
-    <link rel="stylesheet" href="style.css">
-    <link
-        href="https://fonts.googleapis.com/css2?family=Merriweather:wght@300;700&family=Nunito:wght@300;400;600&display=swap"
-        rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <title>Professional Day Tracker | Jan 20 - June 30</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
 </head>
 
 <body>
 
-    <!-- Login Section -->
-    <div id="login-container" class="container active">
+    <!-- Login Overlay -->
+    <div id="login-overlay" class="login-overlay">
         <div class="login-card">
-            <div class="brand-logo">
-                <i class="fas fa-leaf"></i>
+            <!-- Security Dog -->
+            <div class="dog-container">
+                <div class="dog">
+                    <div class="ears"></div>
+                    <div class="head">
+                        <div class="eyes">
+                            <div class="eye left"></div>
+                            <div class="eye right"></div>
+                        </div>
+                        <div class="muzzle">
+                            <div class="nose"></div>
+                        </div>
+                    </div>
+                </div>
             </div>
+
             <h1>Welcome Back</h1>
-            <p>Please scale your nutrition.</p>
-            <div class="input-wrapper">
-                <input type="password" id="password-input" placeholder="Passcode" maxlength="4">
-            </div>
-            <button class="btn-primary" onclick="checkPassword()">Enter Tracker</button>
-            <p id="error-msg" class="hidden"><i class="fas fa-exclamation-circle"></i> Incorrect Code</p>
+            <p>Please enter your access key to continue.</p>
+            <input type="password" id="password-input" placeholder="Enter Password" />
+            <button id="login-btn">Access Dashboard</button>
+            <p id="login-error" class="error-message"></p>
         </div>
     </div>
 
-    <!-- Main Dashboard -->
-    <div id="app-container" class="container hidden">
-        <header>
-            <div class="header-top">
-                <button class="logout-btn-icon" onclick="logout()" title="Logout">
-                    <i class="fas fa-sign-out-alt"></i>
-                </button>
-                <h1 class="nature-text">Nourish<span class="highlight">Daily</span></h1>
-                <button class="print-btn-icon" onclick="printDay()" title="Print Report">
-                    <i class="fas fa-print"></i>
-                </button>
+    <!-- Main Application -->
+    <div id="app-container" class="app-container hidden">
+
+        <!-- Sidebar / Navigation -->
+        <aside class="sidebar">
+            <div class="logo">
+                <h2>Day<span class="highlight">Tracker</span></h2>
             </div>
-            <div class="header-sub">
-                <p id="current-date-display">February 10, 2026</p>
-                <div class="date-wrapper">
-                    <input type="date" id="date-picker">
+            <nav>
+                <ul>
+                    <li class="active" data-view="dashboard">Dashboard</li>
+                    <li data-view="calendar">Calendar</li>
+                    <li data-view="settings">Settings</li>
+                </ul>
+            </nav>
+            <div class="user-profile">
+                <div class="avatar">U</div>
+                <div class="info">
+                    <span class="name">Ajay Raman</span>
+                    <span class="role">SDI Trainee</span>
                 </div>
             </div>
-        </header>
+            <button id="logout-btn" class="logout-btn">
+                Logout
+            </button>
+        </aside>
 
-        <main class="meals-grid">
-            <!-- Breakfast Card -->
-            <div class="meal-card" id="card-breakfast">
-                <div class="card-content">
-                    <div class="card-header">
-                        <div class="icon-box"><i class="fas fa-mug-hot"></i></div>
-                        <h2>Breakfast</h2>
-                    </div>
-                    <div class="card-body">
-                        <div class="input-group">
-                            <label>Menu Item</label>
-                            <input type="text" id="breakfast-item" placeholder="e.g., Oatmeal & Fruit">
-                        </div>
-                        <div class="action-row">
-                            <button class="status-btn ate" onclick="setStatus('breakfast', 'ate')">
-                                <i class="fas fa-check"></i> Ate
-                            </button>
-                            <button class="status-btn not-ate" onclick="setStatus('breakfast', 'not-ate')">
-                                <i class="fas fa-times"></i> Skipped
-                            </button>
-                        </div>
-                        <div class="status-display">
-                            <span id="text-status-breakfast">Pending</span>
-                        </div>
-                    </div>
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <header>
+                <div class="header-title">
+                    <h2 id="page-title">Dashboard</h2>
+                    <p class="subtitle">Track your progress from Jan 20 to June 30</p>
+                </div>
+                <div class="date-display" id="current-date-display">
+                    <!-- Date inserted by JS -->
+                </div>
+            </header>
 
-                    <!-- Locked Overlay -->
-                    <div class="lock-overlay">
-                        <div class="lock-msg">
-                            <i class="fas fa-lock"></i>
-                            <span id="lock-text-breakfast">Unlocks at 9:00 AM</span>
-                        </div>
+            <!-- Dashboard View -->
+            <section id="dashboard-view" class="view-section active">
+                <div class="stats-grid">
+                    <div class="stat-card highlight-card">
+                        <h3>Days Remaining</h3>
+                        <div class="value" id="days-remaining">--</div>
+                        <p class="desc">Until June 30, 2026</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Days Completed</h3>
+                        <div class="value" id="days-completed">--</div>
+                        <p class="desc">Since Jan 20, 2026</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Total Entries</h3>
+                        <div class="value" id="total-entries">0</div>
+                        <p class="desc">Daily logs recorded</p>
                     </div>
                 </div>
-            </div>
 
-            <!-- Lunch Card -->
-            <div class="meal-card" id="card-lunch">
-                <div class="card-content">
-                    <div class="card-header">
-                        <div class="icon-box"><i class="fas fa-utensils"></i></div>
-                        <h2>Lunch</h2>
+                <div class="progress-section">
+                    <h3>Training Period Progress</h3>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar" id="overall-progress" style="width: 0%"></div>
                     </div>
-                    <div class="card-body">
-                        <div class="input-group">
-                            <label>Menu Item</label>
-                            <input type="text" id="lunch-item" placeholder="e.g., Grilled Salad">
-                        </div>
-                        <div class="action-row">
-                            <button class="status-btn ate" onclick="setStatus('lunch', 'ate')">
-                                <i class="fas fa-check"></i> Ate
-                            </button>
-                            <button class="status-btn not-ate" onclick="setStatus('lunch', 'not-ate')">
-                                <i class="fas fa-times"></i> Skipped
-                            </button>
-                        </div>
-                        <div class="status-display">
-                            <span id="text-status-lunch">Pending</span>
-                        </div>
-                    </div>
-                    <div class="lock-overlay">
-                        <div class="lock-msg">
-                            <i class="fas fa-lock"></i>
-                            <span id="lock-text-lunch">Unlocks at 2:00 PM</span>
-                        </div>
+                    <div class="progress-labels">
+                        <span>Jan 20</span>
+                        <span id="progress-percentage">0%</span>
+                        <span>June 30</span>
                     </div>
                 </div>
-            </div>
 
-            <!-- Dinner Card -->
-            <div class="meal-card" id="card-dinner">
-                <div class="card-content">
-                    <div class="card-header">
-                        <div class="icon-box"><i class="fas fa-moon"></i></div>
-                        <h2>Dinner</h2>
+                <div class="recent-activity">
+                    <h3>Recent Entries</h3>
+                    <ul id="recent-entries-list">
+                        <!-- Populated by JS -->
+                        <li class="empty-state">No entries yet. Start tracking today!</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Calendar View -->
+            <section id="calendar-view" class="view-section hidden">
+                <div class="calendar-controls">
+                    <button id="prev-month">&lt;</button>
+                    <h3 id="current-month-display">January 2026</h3>
+                    <button id="next-month">&gt;</button>
+                </div>
+                <div class="calendar-grid-header">
+                    <div>Sun</div>
+                    <div>Mon</div>
+                    <div>Tue</div>
+                    <div>Wed</div>
+                    <div>Thu</div>
+                    <div>Fri</div>
+                    <div>Sat</div>
+                </div>
+                <div id="calendar-grid" class="calendar-grid">
+                    <!-- Generated by JS -->
+                </div>
+            </section>
+
+            <!-- Settings View -->
+            <section id="settings-view" class="view-section hidden">
+                <h3>Personalize Your Experience</h3>
+                <p style="color: var(--text-secondary); margin-bottom: 2rem;">Select a theme that matches your vibe.</p>
+
+                <div class="theme-grid">
+                    <!-- Deep Blue (Default) -->
+                    <div class="theme-card active-theme" data-theme-value="default">
+                        <div class="theme-preview" style="--preview-bg: #0f172a; --preview-accent: #3b82f6;"></div>
+                        <h3>Deep Blue</h3>
+                        <p>Professional & Clean</p>
                     </div>
-                    <div class="card-body">
-                        <div class="input-group">
-                            <label>Menu Item</label>
-                            <input type="text" id="dinner-item" placeholder="e.g., Soup & Bread">
-                        </div>
-                        <div class="action-row">
-                            <button class="status-btn ate" onclick="setStatus('dinner', 'ate')">
-                                <i class="fas fa-check"></i> Ate
-                            </button>
-                            <button class="status-btn not-ate" onclick="setStatus('dinner', 'not-ate')">
-                                <i class="fas fa-times"></i> Skipped
-                            </button>
-                        </div>
-                        <div class="status-display">
-                            <span id="text-status-dinner">Pending</span>
-                        </div>
+
+                    <!-- Cyberpunk -->
+                    <div class="theme-card" data-theme-value="cyberpunk">
+                        <div class="theme-preview" style="--preview-bg: #050510; --preview-accent: #ff00ff;"></div>
+                        <h3>Cyberpunk</h3>
+                        <p>Neon & Futuristic</p>
                     </div>
-                    <div class="lock-overlay">
-                        <div class="lock-msg">
-                            <i class="fas fa-lock"></i>
-                            <span id="lock-text-dinner">Unlocks at 8:00 PM</span>
-                        </div>
+
+                    <!-- Nature -->
+                    <div class="theme-card" data-theme-value="nature">
+                        <div class="theme-preview" style="--preview-bg: #1a2f23; --preview-accent: #4ade80;"></div>
+                        <h3>Nature</h3>
+                        <p>Calm & Organic</p>
+                    </div>
+
+                    <!-- Minimalist -->
+                    <div class="theme-card" data-theme-value="minimalist">
+                        <div class="theme-preview" style="--preview-bg: #ffffff; --preview-accent: #0f172a;"></div>
+                        <h3>Minimalist</h3>
+                        <p>Focus & Clarity</p>
                     </div>
                 </div>
-            </div>
+            </section>
+
         </main>
+    </div>
+
+    <!-- Entry Modal -->
+    <div id="entry-modal" class="modal hidden">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h2 id="modal-date-title">Entry for Date</h2>
+            <textarea id="daily-log" placeholder="What did you learn or achieve today?"></textarea>
+            <div class="image-upload-section">
+                <input type="file" id="image-input" accept="image/*" class="hidden">
+                <button id="add-photo-btn" class="secondary-btn">📷 Add Photo</button>
+                <div id="image-preview-container" class="hidden">
+                    <img id="image-preview" src="" alt="Success Photo">
+                    <button id="zoom-photo-btn" class="zoom-btn" title="View Full Size">⤢</button>
+                    <button id="remove-photo-btn" class="remove-btn">×</button>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button id="save-entry-btn" class="primary-btn">Save Entry</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="lightbox" class="lightbox hidden">
+        <span class="close-lightbox">&times;</span>
+        <div class="lightbox-content">
+            <img id="lightbox-img" src="" alt="Full-size Success Photo">
+        </div>
     </div>
 
     <script src="script.js"></script>
 </body>
 
-
 </html>
-
