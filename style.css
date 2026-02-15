@@ -440,21 +440,40 @@ header {
         display: block;
     }
 
+    /* Hide UI controls and login */
     #login-container,
     .print-btn-icon,
-    .date-wrapper,
-    header {
+    .logout-btn-icon,
+    .date-wrapper {
         display: none !important;
     }
 
-    /* Show simple header for print */
-    #app-container:before {
-        content: "Daily Food Tracker Log";
-        display: block;
-        font-size: 2rem;
-        font-weight: bold;
+    /* Show and style header for print */
+    header {
+        display: block !important;
+        box-shadow: none;
+        border-bottom: 2px solid var(--primary-green);
+        margin-bottom: 30px;
+        padding: 10px 0;
         text-align: center;
-        margin-bottom: 20px;
+    }
+
+    .nature-text {
+        font-size: 2.5rem;
+        margin-bottom: 5px;
+        position: static;
+        transform: none;
+    }
+
+    #current-date-display {
+        font-size: 1.4rem;
+        color: var(--dark-green);
+        display: block;
+        font-weight: bold;
+    }
+
+    #app-container:before {
+        display: none;
     }
 
     .meals-grid {
